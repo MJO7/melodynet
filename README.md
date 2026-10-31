@@ -1,4 +1,4 @@
-# MelodyNet 
+# MelodyNet [Tentative name, can be changed]
 Our app is a mobile-based social media app that focuses on creating and viewing posts, and finding friends through music. 
 
 The primary features are:
@@ -7,4 +7,4 @@ The ability to view other profiles, and see that user’s posts and songs they l
 A search functionality in which users can search for text in posts, specific songs used in posts, and usernames
 An explore page where users can filter posts by: Newest, Trending (posts with abnormally high likes), and Recommended (posts with music similar to the user’s listening and viewing history)
 Pages for verified/official songs and artists, in which users can be linked to see their future concerts.
-A profile page which shows friends, followers, previous posts, profile picture, favorite genre of songs, and username
+A profile page which shows friends, followers, previous posts, profile picture, favorite genre of songs, and username.
