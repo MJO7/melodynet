@@ -6,16 +6,28 @@ const { parseId, parsePaging } = require('../lib/util');
 const router = express.Router();
 
 // Shared SELECT for the post shape returned everywhere. $1 = viewer id (or null).
+// The song/artist joins are LEFT JOINs so posts without a song keep working unchanged;
+// `song` is null in that case instead of an object full of nulls.
 const POST_SELECT = `
   SELECT p.id, p.song_id, p.body, p.image_url, p.audio_url, p.created_at,
          json_build_object('username', u.username, 'display_name', u.display_name,
                            'avatar_url', u.avatar_url) AS author,
+         CASE WHEN p.song_id IS NULL THEN NULL ELSE
+           json_build_object('id', s.id::text, 'title', s.title, 'album', s.album,
+                             'cover_url', s.cover_url,
+                             'duration_seconds', s.duration_seconds,
+                             'artist', json_build_object('id', a.id::text, 'name', a.name,
+                                                         'bio', a.bio, 'image_url', a.image_url))
+         END AS song,
          (SELECT count(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count,
          COALESCE((SELECT json_object_agg(type, n)
                      FROM (SELECT type, count(*)::int AS n FROM reactions
                             WHERE post_id = p.id GROUP BY type) r), '{}'::json) AS reactions,
          (SELECT type FROM reactions WHERE post_id = p.id AND user_id = $1) AS my_reaction
-    FROM posts p JOIN users u ON u.id = p.author_id`;
+    FROM posts p
+    JOIN users u ON u.id = p.author_id
+    LEFT JOIN songs s ON s.id = p.song_id
+    LEFT JOIN artists a ON a.id = s.artist_id`;
 
 // Trims a string and enforces a max length. null/'' -> null, wrong type/too long -> undefined (invalid).
 function cleanString(v, max) {
@@ -99,3 +111,4 @@ router.get('/users/:username/posts', optionalAuth, async (req, res) => {
 });
 
 module.exports = router;
+module.exports.POST_SELECT = POST_SELECT;  // reused by routes/music.js so post shapes stay identical
