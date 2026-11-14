@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, Image, StyleSheet } from 'react-native';
 import { colors, spacing } from '../theme';
 
 // Reaction levels match the backend: dislike / like / very_like.
@@ -9,7 +9,8 @@ const REACTIONS = [
   { type: 'very_like', label: '🔥', name: 'Very like' },
 ];
 
-const IMAGE_COLORS = ['#4C1D95', '#0E7490', '#9D174D', '#166534'];
+// A local image (number from require) or a URL string from the API.
+const toSource = (img) => (typeof img === 'string' ? { uri: img } : img);
 
 function timeAgo(iso) {
   const mins = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
@@ -46,9 +47,7 @@ export default function PostCard({ post }) {
       {post.body ? <Text style={styles.body}>{post.body}</Text> : null}
 
       {post.image_url ? (
-        <View style={[styles.image, { backgroundColor: IMAGE_COLORS[Number(post.id) % IMAGE_COLORS.length] }]}>
-          <Text style={styles.imageNote}>image</Text>
-        </View>
+        <Image source={toSource(post.image_url)} style={styles.image} resizeMode="cover" />
       ) : null}
 
       {post.audio_url || post.song ? (
@@ -57,7 +56,14 @@ export default function PostCard({ post }) {
           onPress={() => post.audio_url && setPlaying((p) => !p)}
           accessibilityLabel={playing ? 'Pause clip' : 'Play clip'}
         >
-          {post.audio_url ? <Text style={styles.play}>{playing ? '❚❚' : '▶'}</Text> : <Text style={styles.play}>♪</Text>}
+          {post.song?.cover_url ? (
+            <View style={styles.coverWrap}>
+              <Image source={toSource(post.song.cover_url)} style={styles.cover} />
+              {post.audio_url ? <Text style={styles.coverPlay}>{playing ? '❚❚' : '▶'}</Text> : null}
+            </View>
+          ) : (
+            <Text style={styles.play}>{post.audio_url ? (playing ? '❚❚' : '▶') : '♪'}</Text>
+          )}
           <View style={{ flex: 1 }}>
             <Text style={styles.songTitle} numberOfLines={1}>
               {post.song ? post.song.title : 'Audio clip'}
@@ -108,11 +114,10 @@ const styles = StyleSheet.create({
   name: { color: colors.text, fontWeight: '600', fontSize: 15 },
   muted: { color: colors.muted, fontSize: 13 },
   body: { color: colors.text, fontSize: 15, lineHeight: 21, marginBottom: spacing.md },
-  image: {
-    height: 180, borderRadius: 12, marginBottom: spacing.md,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  imageNote: { color: 'rgba(255,255,255,0.6)', fontSize: 13 },
+  image: { width: '100%', aspectRatio: 1, borderRadius: 12, marginBottom: spacing.md },
+  coverWrap: { width: 52, height: 52, marginRight: spacing.md, alignItems: 'center', justifyContent: 'center' },
+  cover: { position: 'absolute', width: 52, height: 52, borderRadius: 8 },
+  coverPlay: { color: '#fff', fontSize: 16, textShadowColor: 'rgba(0,0,0,0.7)', textShadowRadius: 4 },
   audio: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: colors.accentSoft,
     borderRadius: 12, padding: spacing.md, marginBottom: spacing.md,

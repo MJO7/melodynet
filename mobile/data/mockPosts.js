@@ -2,6 +2,8 @@
 // returns from GET /posts/:id (author, reactions, my_reaction, comment_count),
 // so swapping in real API calls later only means replacing this import.
 // `song` is extra display info; the API currently only returns song_id.
+// image_url / song.cover_url can be a local image (mock) or a URL string (real API).
+import { covers } from './covers';
 
 const minutesAgo = (m) => new Date(Date.now() - m * 60 * 1000).toISOString();
 
@@ -13,7 +15,7 @@ export const mockPosts = [
     id: '1',
     author: { username: 'maya', display_name: 'Maya Chen', avatar_url: null },
     body: 'This bridge hits different at 2am. Anyone else replaying it on loop?',
-    song: { title: 'Midnight City', artist: 'M83' },
+    song: { title: 'Midnight City', artist: 'M83', cover_url: covers.midnight },
     image_url: null,
     audio_url: 'mock://clip1',
     created_at: minutesAgo(8),
@@ -25,8 +27,8 @@ export const mockPosts = [
     id: '2',
     author: { username: 'jon', display_name: 'Jon', avatar_url: null },
     body: 'Caught this live last night. Still got goosebumps.',
-    song: { title: 'Pink + White', artist: 'Frank Ocean' },
-    image_url: 'mock://2',
+    song: { title: 'Pink + White', artist: 'Frank Ocean', cover_url: covers.pinkwhite },
+    image_url: covers.stage,
     audio_url: null,
     created_at: minutesAgo(55),
     comment_count: 4,
@@ -37,7 +39,7 @@ export const mockPosts = [
     id: '3',
     author: { username: 'cindy', display_name: 'Cindy Lin', avatar_url: null },
     body: 'Study playlist starter pack. Drop your favorites below.',
-    song: { title: 'Weightless', artist: 'Marconi Union' },
+    song: { title: 'Weightless', artist: 'Marconi Union', cover_url: covers.weightless },
     image_url: null,
     audio_url: 'mock://clip3',
     created_at: minutesAgo(190),
