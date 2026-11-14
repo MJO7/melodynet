@@ -51,6 +51,7 @@ if (!canRun) {
   let songId;
   let artistId;
   let songTitle;
+  let artistName;
   let songPostId;
   let songlessPostId;
 
@@ -126,13 +127,14 @@ if (!canRun) {
     assert.deepEqual(await counts(), first);
 
     const seeded = (await db.query(
-      `SELECT s.id, s.title, a.id AS artist_id
+      `SELECT s.id, s.title, a.id AS artist_id, a.name AS artist_name
          FROM songs s JOIN artists a ON a.id = s.artist_id
         ORDER BY s.id LIMIT 1`
     )).rows[0];
     songId = seeded.id;
     artistId = seeded.artist_id;
     songTitle = seeded.title;
+    artistName = seeded.artist_name;
   });
 
   test('a user can sign up and receives a token', async () => {
@@ -298,10 +300,20 @@ if (!canRun) {
     assert.equal(typeof json.songs[0].id, 'string');
   });
 
+  test('search finds artists by name', async () => {
+    const { status, json } = await api('GET', `/search?q=${encodeURIComponent(artistName)}`);
+    assert.equal(status, 200);
+    assert.ok(json.artists.some((a) => a.id === String(artistId)));
+    assert.equal(typeof json.artists[0].id, 'string');
+  });
+
   test('search returns empty groups when nothing matches', async () => {
     const { status, json } = await api('GET', '/search?q=zzzznomatch');
     assert.equal(status, 200);
-    assert.deepEqual([json.posts.length, json.users.length, json.songs.length], [0, 0, 0]);
+    assert.deepEqual(
+      [json.posts.length, json.users.length, json.songs.length, json.artists.length],
+      [0, 0, 0, 0]
+    );
   });
 
   test('search respects limit and includes my_reaction when signed in', async () => {

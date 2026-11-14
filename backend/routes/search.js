@@ -22,7 +22,7 @@ router.get('/search', optionalAuth, async (req, res) => {
   const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), MAX_LIMIT);
   const pattern = likePattern(q);
 
-  const [posts, users, songs] = await Promise.all([
+  const [posts, users, songs, artists] = await Promise.all([
     pool.query(
       `${POST_SELECT}
         WHERE p.body ILIKE $2
@@ -44,9 +44,22 @@ router.get('/search', optionalAuth, async (req, res) => {
         ORDER BY s.title LIMIT $2`,
       [pattern, limit]
     ),
+    pool.query(
+      `SELECT a.id, a.name, a.bio, a.image_url
+         FROM artists a
+        WHERE a.name ILIKE $1
+        ORDER BY a.name LIMIT $2`,
+      [pattern, limit]
+    ),
   ]);
 
-  res.json({ query: q, posts: posts.rows, users: users.rows, songs: songs.rows });
+  res.json({
+    query: q,
+    posts: posts.rows,
+    users: users.rows,
+    songs: songs.rows,
+    artists: artists.rows,
+  });
 });
 
 module.exports = router;
