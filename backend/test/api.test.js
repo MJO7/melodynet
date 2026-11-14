@@ -307,6 +307,52 @@ if (!canRun) {
     assert.equal(typeof json.artists[0].id, 'string');
   });
 
+  test('grouped search reports a next_cursor for every group', async () => {
+    const { json } = await api('GET', '/search?q=post');
+    assert.deepEqual(Object.keys(json.next_cursor).sort(), ['artists', 'posts', 'songs', 'users']);
+    // Small dataset: one page is enough, so every cursor is null.
+    assert.ok(Object.values(json.next_cursor).every((c) => c === null));
+  });
+
+  test('typed search pages through posts with a cursor', async () => {
+    const first = await api('GET', '/search?q=post&type=posts&limit=1');
+    assert.equal(first.status, 200);
+    assert.equal(first.json.type, 'posts');
+    assert.equal(first.json.items.length, 1);
+    assert.ok(first.json.next_cursor);
+
+    const second = await api(
+      'GET',
+      `/search?q=post&type=posts&limit=1&cursor=${first.json.next_cursor}`
+    );
+    assert.equal(second.json.items.length, 1);
+    assert.notEqual(second.json.items[0].id, first.json.items[0].id);
+    assert.equal(second.json.next_cursor, null);
+  });
+
+  test('typed search pages through songs alphabetically', async () => {
+    const first = await api('GET', '/search?q=a&type=songs&limit=2');
+    assert.equal(first.json.items.length, 2);
+    assert.ok(first.json.next_cursor);
+
+    const second = await api('GET', `/search?q=a&type=songs&limit=2&cursor=${first.json.next_cursor}`);
+    assert.equal(second.json.items.length, 2);
+    const titles = [...first.json.items, ...second.json.items].map((s) => s.title);
+    assert.deepEqual(titles, [...titles].sort());
+  });
+
+  test('typed search rejects an unknown type or a bad cursor', async () => {
+    const badType = await api('GET', '/search?q=post&type=comments');
+    assert.equal(badType.status, 400);
+
+    const badCursor = await api('GET', '/search?q=post&type=posts&cursor=999999');
+    assert.equal(badCursor.status, 400);
+    assert.equal(badCursor.json.error, 'invalid cursor');
+
+    const junkCursor = await api('GET', '/search?q=post&type=posts&cursor=abc');
+    assert.equal(junkCursor.status, 400);
+  });
+
   test('search returns empty groups when nothing matches', async () => {
     const { status, json } = await api('GET', '/search?q=zzzznomatch');
     assert.equal(status, 200);
