@@ -50,6 +50,7 @@ if (!canRun) {
   let token;
   let songId;
   let artistId;
+  let songTitle;
   let songPostId;
   let songlessPostId;
 
@@ -131,6 +132,7 @@ if (!canRun) {
     )).rows[0];
     songId = seeded.id;
     artistId = seeded.artist_id;
+    songTitle = seeded.title;
   });
 
   test('a user can sign up and receives a token', async () => {
@@ -268,6 +270,47 @@ if (!canRun) {
     const post = json.posts.find((p) => String(p.id) === String(songPostId));
     assert.equal(post.my_reaction, 'like');
     assert.equal(post.comment_count, 1);
+  });
+
+  test('search rejects a missing, blank, or overlong query', async () => {
+    assert.equal((await api('GET', '/search')).status, 400);
+    assert.equal((await api('GET', '/search?q=%20%20')).status, 400);
+    assert.equal((await api('GET', `/search?q=${'a'.repeat(101)}`)).status, 400);
+  });
+
+  test('search finds posts by text', async () => {
+    const { status, json } = await api('GET', '/search?q=song%20post');
+    assert.equal(status, 200);
+    assert.equal(json.query, 'song post');
+    assert.ok(json.posts.some((p) => String(p.id) === String(songPostId)));
+    assert.equal(typeof json.posts[0].song.id, 'string');
+  });
+
+  test('search finds users by username', async () => {
+    const { json } = await api('GET', '/search?q=seedtester');
+    assert.equal(json.users.length, 1);
+    assert.equal(json.users[0].username, 'seedtester');
+  });
+
+  test('search finds songs by title', async () => {
+    const { json } = await api('GET', `/search?q=${encodeURIComponent(songTitle)}`);
+    assert.ok(json.songs.some((s) => s.id === String(songId)));
+    assert.equal(typeof json.songs[0].id, 'string');
+  });
+
+  test('search returns empty groups when nothing matches', async () => {
+    const { status, json } = await api('GET', '/search?q=zzzznomatch');
+    assert.equal(status, 200);
+    assert.deepEqual([json.posts.length, json.users.length, json.songs.length], [0, 0, 0]);
+  });
+
+  test('search respects limit and includes my_reaction when signed in', async () => {
+    const anon = await api('GET', '/search?q=post&limit=1');
+    assert.equal(anon.json.posts.length, 1);
+
+    const authed = await api('GET', '/search?q=first%20song%20post', { auth: token });
+    const post = authed.json.posts.find((p) => String(p.id) === String(songPostId));
+    assert.equal(post.my_reaction, 'like');
   });
 
   test('unknown routes still return 404', async () => {

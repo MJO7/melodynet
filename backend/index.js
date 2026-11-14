@@ -31,6 +31,7 @@ app.use(require('./routes/posts'));
 app.use(require('./routes/comments'));
 app.use(require('./routes/reactions'));
 app.use(require('./routes/music'));
+app.use(require('./routes/search'));
 
 app.use((req, res) => {                  // anything unmatched -> 404
   res.status(404).json({ error: 'not found' });
