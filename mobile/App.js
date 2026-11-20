@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { HomeScreen, AuthScreen, ExploreScreen } from './screens/Screens';
+import { HomeScreen } from './screens/HomeScreen';
+import { ExploreScreen } from './screens/ExploreScreen';
+import { AuthScreen } from './screens/AuthScreen';
+import { PostScreen } from './screens/PostScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
 import { colors, spacing } from './theme';
 
@@ -29,6 +32,8 @@ export default function App() {
             <ProfileScreen />
           ) : tab === 'explore' ? (
             <ExploreScreen />
+          ) : tab === 'post' ? (
+            <PostScreen />
           ) : tab === 'auth' ? (
             <AuthScreen onLogin={() => setTab('home')} />
           ) : (

@@ -43,15 +43,6 @@ export function HomeScreen() {
   );
 }
 
-// Stubs below are Jonathan's; to be filled in.
-export function AuthScreen({ onLogin }) {
-
-}
-
-export function ExploreScreen() {
-
-}
-
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   header: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
