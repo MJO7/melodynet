@@ -52,10 +52,6 @@ export function ExploreScreen() {
 
 }
 
-export function ProfileScreen() {
-
-}
-
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   header: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md },

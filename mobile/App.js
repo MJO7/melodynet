@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { HomeScreen } from './screens/Screens';
+import { HomeScreen, AuthScreen, ExploreScreen } from './screens/Screens';
+import { ProfileScreen } from './screens/ProfileScreen';
 import { colors, spacing } from './theme';
 
 // Bottom navigation. Only Home is built so far; the rest show a placeholder
@@ -24,6 +25,12 @@ export default function App() {
         <View style={styles.content}>
           {tab === 'home' ? (
             <HomeScreen />
+          ) : tab === 'profile' ? (
+            <ProfileScreen />
+          ) : tab === 'explore' ? (
+            <ExploreScreen />
+          ) : tab === 'auth' ? (
+            <AuthScreen onLogin={() => setTab('home')} />
           ) : (
             <View style={styles.placeholder}>
               <Text style={styles.placeholderText}>Coming soon</Text>
