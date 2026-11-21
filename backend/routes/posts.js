@@ -98,4 +98,5 @@ router.get('/users/:username/posts', optionalAuth, async (req, res) => {
   res.json({ posts: rows, next_before: rows.length === limit ? rows[rows.length - 1].id : null });
 });
 
+router.POST_SELECT = POST_SELECT;   // reused by search/song routes
 module.exports = router;
