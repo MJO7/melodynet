@@ -7,10 +7,10 @@ import { ExploreScreen } from './screens/ExploreScreen';
 import { AuthScreen } from './screens/AuthScreen';
 import { PostScreen } from './screens/PostScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
+import { getSession, saveSession } from './lib/session';
 import { colors, spacing } from './theme';
 
-// Bottom navigation. Only Home is built so far; the rest show a placeholder
-// until the Explore, Post and Profile screens exist.
+// Bottom navigation. Home and Profile are built; Explore and Post are placeholders.
 const TABS = [
   { key: 'home', label: 'Home', icon: '⌂' },
   { key: 'explore', label: 'Explore', icon: '⌕' },
@@ -20,6 +20,27 @@ const TABS = [
 
 export default function App() {
   const [tab, setTab] = useState('home');
+  const [session, setSession] = useState(getSession());
+  const [showAuth, setShowAuth] = useState(false);
+
+  const signedIn = Boolean(session);
+
+  function handleLogin(next) {
+    saveSession(next);
+    setSession(next);
+    setShowAuth(false);
+  }
+
+  // Signing in is optional: the feed is public, so auth covers the app only while
+  // the user is actually authenticating.
+  if (showAuth) {
+    return (
+      <SafeAreaProvider>
+        <StatusBar style="light" />
+        <AuthScreen onLogin={handleLogin} onCancel={() => setShowAuth(false)} />
+      </SafeAreaProvider>
+    );
+  }
 
   return (
     <SafeAreaProvider>
@@ -27,15 +48,13 @@ export default function App() {
       <View style={styles.root}>
         <View style={styles.content}>
           {tab === 'home' ? (
-            <HomeScreen />
+            <HomeScreen signedIn={signedIn} onSignIn={() => setShowAuth(true)} />
           ) : tab === 'profile' ? (
-            <ProfileScreen />
+            <ProfileScreen signedIn={signedIn} onSignIn={() => setShowAuth(true)} />
           ) : tab === 'explore' ? (
             <ExploreScreen />
           ) : tab === 'post' ? (
-            <PostScreen />
-          ) : tab === 'auth' ? (
-            <AuthScreen onLogin={() => setTab('home')} />
+            <PostScreen signedIn={signedIn} onSignIn={() => setShowAuth(true)} />
           ) : (
             <View style={styles.placeholder}>
               <Text style={styles.placeholderText}>Coming soon</Text>

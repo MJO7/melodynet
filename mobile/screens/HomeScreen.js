@@ -2,13 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PostCard from '../components/PostCard';
+import { SignInButton } from '../components/SignInButton';
 import { mockPosts, FOLLOWING } from '../data/mockPosts';
 import { colors, spacing } from '../theme';
 
 const FEED_TABS = ['Newest', 'Trending', 'Following'];
 
 // Home feed. Uses mock data for now; later, load posts from the backend here.
-export function HomeScreen() {
+export function HomeScreen({ signedIn = false, onSignIn }) {
   const [feedTab, setFeedTab] = useState('Newest');
 
   const total = (p) => Object.values(p.reactions).reduce((a, b) => a + b, 0);
@@ -22,6 +23,7 @@ export function HomeScreen() {
     <SafeAreaView style={styles.screen} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.logo}>♪ MelodyNet</Text>
+        {signedIn ? null : <SignInButton onPress={onSignIn} />}
       </View>
 
       <View style={styles.tabs}>
@@ -45,7 +47,13 @@ export function HomeScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  header: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   logo: { color: colors.text, fontSize: 22, fontWeight: '800' },
   tabs: { flexDirection: 'row', paddingHorizontal: spacing.lg, marginBottom: spacing.md },
   tab: {

@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PostCard from '../components/PostCard';
+import { SignInButton } from '../components/SignInButton';
 import { mockPosts, FOLLOWING } from '../data/mockPosts';
 import { colors, spacing } from '../theme';
 
-export function ProfileScreen() {
+export function ProfileScreen({ signedIn = false, onSignIn }) {
   const [tab, setTab] = useState('Posts');
 
   const user = {
@@ -39,9 +40,13 @@ export function ProfileScreen() {
           <>
             <View style={styles.header}>
               <Text style={styles.title}>Profile</Text>
-              <Pressable style={styles.moreButton}>
-                <Text style={styles.more}>•••</Text>
-              </Pressable>
+              {signedIn ? (
+                <Pressable style={styles.moreButton}>
+                  <Text style={styles.more}>•••</Text>
+                </Pressable>
+              ) : (
+                <SignInButton onPress={onSignIn} />
+              )}
             </View>
 
             <View style={styles.profile}>
